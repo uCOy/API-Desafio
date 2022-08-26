@@ -11,10 +11,14 @@ usersRoutes.put("/update", users.update);
 
 usersRoutes.delete("/delete/:id", users.delete);
 
-usersRoutes.get("/login", users.login);
+usersRoutes.post("/login", users.login);
+
+usersRoutes.get("/validatoken", users.validarToken);
 
 usersRoutes.put("/password", users.password);
 
 usersRoutes.put("/recovery", users.recovery);
+
+usersRoutes.post("/updatepassword", users.updatepassword);
 
 module.exports = usersRoutes;

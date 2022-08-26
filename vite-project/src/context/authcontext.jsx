@@ -29,7 +29,7 @@ function AuthProvider({children}){
             'headers': {'Authorization': 'Bearer ' + valueToken}
         }
 
-        await api.get('/validaToken', headers)
+        await api.get('/user/validaToken', headers)
             .then( () => {
                 return true;
             }).catch( () => {
@@ -39,7 +39,6 @@ function AuthProvider({children}){
                 return false
             })
     }
-
 
     function singIn(state){
         setAuthenticated(true);

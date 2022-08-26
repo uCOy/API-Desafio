@@ -22,7 +22,7 @@ const User = db.define('user_senha', {
     },
     verificationCode: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     }
 });
 

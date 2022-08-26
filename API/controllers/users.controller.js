@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const sendMail = require('../providers/mailProvider');
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken');
+const { use } = require('../routes/users.routes');
 
 exports.findAll = async (req, res) => {
     await User.findAll({
@@ -129,8 +132,15 @@ exports.delete = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+    await sleep(1000);
+    function sleep(ms){
+        return new Promise( (resolve) => {
+            setTimeout(resolve,ms)
+        })
+    }
+
     const user = await User.findOne({
-        attributes: ['id', 'name', 'email', 'gender', 'password'],
+        attributes: ['id', 'name', 'email', 'password'],
         where: {
             email: req.body.email
         }
@@ -138,7 +148,7 @@ exports.login = async (req, res) => {
     if(user === null){
         return res.status(400).json({
             erro: true,
-            mensagem:"Erro: Email ou senha incorreta!!!"
+            mensagem:"Erro: Email ou senha incorreta!!"
         })
     }
     if(!(await bcrypt.compare(req.body.password, user.password))){
@@ -147,14 +157,34 @@ exports.login = async (req, res) => {
             mensagem: "Erro: Email ou senha incorreta!!!"
         })
     }
+
+    var token = jwt.sign({ id: user.id }, process.env.SECRET, {
+        expiresIn: 600 // 10min
+        // expiresIn: 60 // 1min
+    });
+
     return res.json({
         erro:false,
         mensagem: "Login realizado com sucesso!!!",
-        name: user.name,
-        email: user.email,
-        gender: user.gender
+        token
     })
 };
+
+exports.validarToken = async (req, res) => {
+    await User.findByPk(req.userId, { 
+        attributes: ['id','name','email']
+    }).then( (user) => {
+        return res.status(200).json({
+            erro: false,
+            user
+        })
+    }).catch( () => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro: Necessário realizar o login!"
+        })
+    })
+}
 
 exports.password = async (req, res) => {
     const {id, password } = req.body;
@@ -171,7 +201,7 @@ exports.password = async (req, res) => {
     .then(() => {
         return res.json({
             erro: false,
-            mensagem: "Senha edita com sucesso!"
+            mensagem: "Senha editada com sucesso!"
         }); 
     }).catch( (err) => {
         return res.status(400).json({
@@ -182,71 +212,112 @@ exports.password = async (req, res) => {
 };
 
 exports.recovery = async (req, res) => {
-    const {id, password} = req.body;
     var dados = req.body;
     let email = dados.email;
-    let name = dados.name;
-    var senhaCrypt = await bcrypt.hash(password, 8);
+    const token = crypto.randomBytes(3).toString('hex')
+    const verificationCode = token
 
-    await User.create(dados)
-    .then( ()=>{
-    /* enviar e-mail */
-    let to = email;
-    let cc = '';
-    var htmlbody = "";
-    htmlbody += '<div style="background-color:#000; margin-bottom:150px;">';
-    htmlbody += '<div style="margin-top:150px;">';
-    htmlbody += '<p style="color:#fff; font-weight:bold;margin-top:50px;">';
-    htmlbody += 'Olá {name},';
-    htmlbody += '</p>';
-    htmlbody += '<p style="color:#fff; font-style:italic;margin-top:50px;">';
-    htmlbody += 'Sua conta foi criada com sucesso!';
-    htmlbody += '</p>';
-    htmlbody += '<p style="color:#fff;margin-top:50px;">';
-    htmlbody += 'Seu login é o seu email: {email}';
-    htmlbody += '</p>';
-    htmlbody += '<p style="color:#fff;margin-top:50px;">';
-    htmlbody += 'Sexo: {gender}';
-    htmlbody += '</p>';
-    htmlbody += '</div>';
-    htmlbody += '</div>';
-    htmlbody = htmlbody.replace('{name}', name);
-    htmlbody = htmlbody.replace('{email}', email);
-    /* ************* */
-    sendMail(to, cc, 'Sua conta foi criada com sucesso!', htmlbody);
-
-    return res.json({
-        erro: false,
-        mensagem: 'Usuário cadastrado com sucesso!'
-    });
-}).catch( (err)=>{
-    return res.status(400).json({
-        erro:true,
-        mensagem: `Erro: Usuário não cadastrado... ${err}`
+    const user = await User.findOne({
+        attributes: ['id', 'name', 'email'],
+        where: {
+            email: req.body.email
+        }
     })
-})
-
-    const users = await User.findByPk(id);
-        if(!users){
+    if(user === null){
+        return res.status(400).json({
+            erro: true,
+            mensagem:"Erro: Email incorreto!!!"
+        })
+    }
+    await User.findByPk(user.email);
+        if(!user.email){
             return res.status(400).json({
                 erro: true,
                 mensagem: "Erro: Nenhum Usuário encontrado!"
             })
     } else {
-        let to = email;
-        let cc = '';
-        sendMail(to, cc, 'Confirme sua alteração de senha');
+        await User.update({ verificationCode }, {where: {id: user.id}})
+        .then(() => {
+            let to = email;
+            let cc = '';
+            var htmlbody = "";
+            htmlbody += '<div style="background-color:#000; margin-bottom:150px;">';
+            htmlbody += '<div style="margin-top:150px;">';
+            htmlbody += '<p style="color:#fff; font-weight:bold;margin-top:50px;">';
+            htmlbody += 'Olá {name},';
+            htmlbody += '</p>';
+            htmlbody += '<p style="color:#fff; font-style:italic;margin-top:50px;">';
+            htmlbody += 'Sua conta foi criada com sucesso!';
+            htmlbody += '</p>';
+            htmlbody += '<p style="color:#fff;margin-top:50px;">';
+            htmlbody += 'Seu login é o seu email: {email}';
+            htmlbody += '</p>';
+            htmlbody += '<p style="color:#fff;margin-top:50px;">';
+            htmlbody += 'Token: {token}';
+            htmlbody += '</p>';
+            htmlbody += '</div>';
+            htmlbody += '</div>';
+            htmlbody = htmlbody.replace('{name}', user.name);
+            htmlbody = htmlbody.replace('{email}', email);
+            htmlbody = htmlbody.replace('{token}', token);
+            sendMail(to, cc, 'Confirme sua alteração de senha', htmlbody);
+            
+            return res.json({
+                erro: false,
+                mensagem: "Codigo de verificação enviado com sucesso!"
+            }); 
+        }).catch( (err) => {
+            return res.status(400).json({
+                erro: true,
+                mensagem: `Erro: ${err}... O email não foi enviado`
+            })
+        })
     }
-    await User.update({password: senhaCrypt }, {where: {id: id}})
-    .then(() => {
-        return res.json({
-            erro: false,
-            mensagem: "Senha edita com sucesso!"
-        }); 
-    }).catch( (err) => {
+};
+
+exports.updatepassword = async (req, res) => {
+
+    const { password } = req.body;
+    var senhaCrypt = await bcrypt.hash(password, 8);
+
+    const user = await User.findOne({
+        attributes: ['id', 'name', 'email'],
+        where: {
+            email: req.body.email
+        }
+    })
+
+    const token = await User.findOne({
+        attributes: ['verificationCode'],
+        where: {
+            verificationCode: req.body.verificationCode
+        }
+    })
+
+    if(user === null){
         return res.status(400).json({
             erro: true,
-            mensagem: `Erro: ${err}... A senha não foi alterada!!!`
+            mensagem:"Erro: Email incorreto!!!"
         })
-    })
-};
+    }
+
+    if(token === null){
+        return res.status(400).json({
+            erro: true,
+            mensagem:"Erro: token incorreto!!!"
+        })
+    } else {      
+        await User.update({ password: senhaCrypt }, {where: {id: user.id}})
+        .then(() => {
+            return res.json({
+                erro: false,
+                mensagem: "Senha editada com sucesso!"
+            }); 
+        }).catch( (err) => {
+            return res.status(400).json({
+                erro: true,
+                mensagem: `Erro: ${err}... A senha não foi alterada!!!`
+            })
+        })
+    }
+}
