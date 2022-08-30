@@ -13,8 +13,6 @@ usersRoutes.delete("/delete/:id", users.delete);
 
 usersRoutes.post("/login", users.login);
 
-usersRoutes.get("/validatoken", users.validarToken);
-
 usersRoutes.put("/password", users.password);
 
 usersRoutes.put("/recovery", users.recovery);

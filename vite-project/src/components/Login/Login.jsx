@@ -1,20 +1,14 @@
 import React, { useState, useContext } from "react";
 import Alert from 'react-bootstrap/Alert';
 import { Container } from "react-bootstrap";
-import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import './styles.css';
 import api from '../../services/api';
 import { useHistory } from 'react-router-dom';
 
-import { Context } from '../../Context/AuthContext';
-
 export function Login() {
   const history = useHistory();  
-
-  const { authenticated, singIn } = useContext(Context);
-  console.log(`Situação do usuário na página Login: ${authenticated}`);
 
   const [user, setUser] = useState({
     email: '',
@@ -45,21 +39,22 @@ export function Login() {
 
     const headers = {
       'Content-Type': 'application/json'
-      // 'Content-Type':'application/x-www-form-urlencoded'
     }
 
-    await api.put("/user/recovery", user, {headers})
+    await api.put("user/recovery", user, {headers})
+
     .then((response) => {
+
       // console.log(response);
+
       setStatus({
         type: 'success',
         mensagem: response.data.mensagem
       })
 
-      localStorage.setItem('token', (response.data.token));
-      console.log(token)
+      // localStorage.setItem('token', (response.data.token));
 
-      singIn(true);
+      // singIn(true);
       
       return history.push('/dashboard');
 
@@ -114,16 +109,11 @@ export function Login() {
                   <Form.Label>Email address</Form.Label>
                   <Form.Control type="email" name="email" onChange={valorInput} placeholder="Enter email" />
                   <Form.Text className="text-muted">
-                    We'll never share your email with anyone else.
-                    {/* Nunca compartilharemos seu e-mail com mais ninguém */}
+                    Insira seu Email para Recuperar sua Senha!!!
                   </Form.Text>
                 </Form.Group>
-                
                 {status.loading ? <Button id="button" variant="primary" disabled type="submit" >Acessando...</Button>
                 : <Button id="button" variant="primary" type="submit" >Acessar</Button>}
-                {/* <Button className="btn-user" variant="primary">
-                  <Link className="obtn-user" to={"/newuser"}>Criar Usuário</Link>
-                </Button> */}
                 
               </Form>
           </Container>

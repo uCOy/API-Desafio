@@ -170,22 +170,6 @@ exports.login = async (req, res) => {
     })
 };
 
-exports.validarToken = async (req, res) => {
-    await User.findByPk(req.userId, { 
-        attributes: ['id','name','email']
-    }).then( (user) => {
-        return res.status(200).json({
-            erro: false,
-            user
-        })
-    }).catch( () => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro: Necessário realizar o login!"
-        })
-    })
-}
-
 exports.password = async (req, res) => {
     const {id, password } = req.body;
     var senhaCrypt = await bcrypt.hash(password, 8);
@@ -255,6 +239,9 @@ exports.recovery = async (req, res) => {
             htmlbody += '<p style="color:#fff;margin-top:50px;">';
             htmlbody += 'Token: {token}';
             htmlbody += '</p>';
+            htmlbody += '<p style="color:#fff;margin-top:50px;">';
+            htmlbody += 'Link: http://127.0.0.1:5173/updatepassword';
+            htmlbody += '</p>';
             htmlbody += '</div>';
             htmlbody += '</div>';
             htmlbody = htmlbody.replace('{name}', user.name);
@@ -293,6 +280,13 @@ exports.updatepassword = async (req, res) => {
             verificationCode: req.body.verificationCode
         }
     })
+    
+    if(user.id === null){
+        return res.status(400).json({
+            erro: true,
+            mensagem:"Erro: Email incorreto!!!"
+        })
+    }
 
     if(user === null){
         return res.status(400).json({

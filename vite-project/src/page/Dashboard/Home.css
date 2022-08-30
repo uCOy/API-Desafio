@@ -1,0 +1,17 @@
+.center{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    height: 748px;
+}
+
+.text-center{
+    height: 200px;
+    width: 400px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid;
+    box-shadow: 1px 5px 10px 10px rgb(66, 66, 70) ;
+    border-radius: 30px;
+}
