@@ -240,13 +240,14 @@ exports.recovery = async (req, res) => {
             htmlbody += 'Token: {token}';
             htmlbody += '</p>';
             htmlbody += '<p style="color:#fff;margin-top:50px;">';
-            htmlbody += 'Link: http://127.0.0.1:5173/updatepassword';
+            htmlbody += '<a style="color=#fff;" href="http://127.0.0.1:5173/updatepassword"> LINK </a>';
             htmlbody += '</p>';
             htmlbody += '</div>';
             htmlbody += '</div>';
             htmlbody = htmlbody.replace('{name}', user.name);
             htmlbody = htmlbody.replace('{email}', email);
             htmlbody = htmlbody.replace('{token}', token);
+            htmlbody = htmlbody.replace('{PORT}', process.env.PORT);
             sendMail(to, cc, 'Confirme sua alteração de senha', htmlbody);
             
             return res.json({

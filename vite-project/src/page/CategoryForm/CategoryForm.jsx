@@ -29,8 +29,18 @@ export const UsuariosForm = (props) => {
     })
 
 
-    var password = document.getElementById("password")   , confirm_password = document.getElementById("confirm_password");  function validatePassword(){   if(password.value != confirm_password.value) {     confirm_password.setCustomValidity("Senhas diferentes!");   } else {     confirm_password.setCustomValidity('');   } }  password.onchange = validatePassword; confirm_password.onkeyup = validatePassword;
+    // var password = document.getElementById("password")   , confirm_password = document.getElementById("confirm_password");  function validatePassword(){   if(password.value != confirm_password.value) {     confirm_password.setCustomValidity("Senhas diferentes!");   } else {     confirm_password.setCustomValidity('');   } }  password.onChange = validatePassword; confirm_password.onkeyup = validatePassword;
 
+    var password = document.getElementById("password"), 
+    confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword(){
+      if(password.value != confirm_password.value) {
+        confirm_password.setCustomValidity("Senhas diferentes!");
+      } else {
+        confirm_password.setCustomValidity('');
+      }
+    }
     const valorInput = e => setUser({
         ... user,
         [e.target.name]: e.target.value
@@ -141,13 +151,13 @@ export const UsuariosForm = (props) => {
                 {!id &&
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" onChange={valorInput} id="password" placeholder="Password" />
+                  <Form.Control type="password" name="password" id="password" placeholder="Password" />
                 </Form.Group>
                 }
                 {!id &&
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" onChange={valorInput} id="confirm_password" placeholder="Password" />
+                  <Form.Control type="password" name="password" id="confirm_password" placeholder="Password" />
                 </Form.Group>
                 }
                 {/* <form class="pure-form">
