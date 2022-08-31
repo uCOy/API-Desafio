@@ -11,14 +11,14 @@ export const UsuariosForm = (props) => {
   
     const history = useHistory();
 
-    const [id] = useState(props.match.params.id);
+    // const [id] = useState(props.match.params.email);
 
     const [user, setUser] = useState({
       email: '',
       password: '',
       verificationCode: ''
     })
-    console.log(id)
+
     
     // const [values, setValues] = useState(initialValue);
     const [acao, setAcao] = useState('Novo');
@@ -28,61 +28,48 @@ export const UsuariosForm = (props) => {
         loading: false
     })
 
-
-    // var password = document.getElementById("password")   , confirm_password = document.getElementById("confirm_password");  function validatePassword(){   if(password.value != confirm_password.value) {     confirm_password.setCustomValidity("Senhas diferentes!");   } else {     confirm_password.setCustomValidity('');   } }  password.onChange = validatePassword; confirm_password.onkeyup = validatePassword;
-
-    var password = document.getElementById("password"), 
-    confirm_password = document.getElementById("confirm_password");
-
-    function validatePassword(){
-      if(password.value != confirm_password.value) {
-        confirm_password.setCustomValidity("Senhas diferentes!");
-      } else {
-        confirm_password.setCustomValidity('');
-      }
-    }
     const valorInput = e => setUser({
         ... user,
         [e.target.name]: e.target.value
     })
 
-    useEffect( () => {
+    // useEffect( () => {
 
-      const getUser = async () => {
+    //   const getUser = async () => {
 
-        await api.get("/user/show/" + id)
-            .then( (response) => {
-                if(response.data.users){
-                  setAcao('Editar')
-                } else {
-                  setStatus({
-                    type: 'warning',
-                    mensagem:'Usuário não encontrado!!!'
-                  })
-                } 
-            }).catch( (err) => {
-                if(err.response){
-                    setStatus({
-                        type:'error',
-                        mensagem: err.response.data.mensagem
-                    })
-                } else {
-                    setStatus({
-                        type:'error',
-                        mensagem: 'Erro: tente mais tarde.....!'
-                    })
-                }
-            })
-    }
+    //     await api.get("/user/show/" + id)
+    //         .then( (response) => {
+    //             if(response.data.users){
+    //               setAcao('Editar')
+    //             } else {
+    //               setStatus({
+    //                 type: 'warning',
+    //                 mensagem:'Usuário não encontrado!!!'
+    //               })
+    //             } 
+    //         }).catch( (err) => {
+    //             if(err.response){
+    //                 setStatus({
+    //                     type:'error',
+    //                     mensagem: err.response.data.mensagem
+    //                 })
+    //             } else {
+    //                 setStatus({
+    //                     type:'error',
+    //                     mensagem: 'Erro Get: tente mais tarde.....!'
+    //                 })
+    //             }
+    //         })
+    // }
     
-    if(id) getUser();
-    }, [id])
+    // if(id) getUser();
+    // }, [id])
 
     const formSubmit = async e => {
         e.preventDefault();
         setStatus({ loading: true });
 
-        if(id){          
+        // if(!id){          
         await api.post("/user/updatepassword", user)
             .then( (response) => {
                     console.log(response);
@@ -98,18 +85,19 @@ export const UsuariosForm = (props) => {
                     } else {
                         setStatus({
                             type: 'error',
-                            mensagem: 'Erro: tente mais tarde...',
+                            mensagem: 'Erro Update: tente mais tarde...',
                             loading: false
                         })                
                     }  
                 })
-        } else {
-          setStatus({
-            type:'error',
-            mensagem: 'Erro: tente mais tarde.....!'
-        })
-        }
-    }
+              }
+    //     } else {
+    //       setStatus({
+    //         type:'error',
+    //         mensagem: 'Erro Id: tente mais tarde.....!'
+    //     })
+    //     }
+    // }
 
     return(
         <div>    
@@ -142,36 +130,22 @@ export const UsuariosForm = (props) => {
                 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                   <Form.Label>Email address</Form.Label>
-                  <Form.Control type="email" name="email" value={user.email} onChange={valorInput} placeholder="Enter email" />
+                  <Form.Control type="email" name="email" value={user.email} onChange={valorInput} placeholder="Enter email" required/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicCode">
                   <Form.Label>Codigo de Verificação</Form.Label>
-                  <Form.Control type="text" name="verificationCode" value={user.verificationCode} onChange={valorInput} placeholder="Enter Code" />
+                  <Form.Control type="text" name="verificationCode" value={user.verificationCode} onChange={valorInput} placeholder="Enter Code" required/>
                 </Form.Group>  
-                {!id &&
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" id="password" placeholder="Password" />
+                  <Form.Control type="password" name="password" onChange={valorInput} placeholder="Password" />
                 </Form.Group>
-                }
-                {!id &&
                 <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" id="confirm_password" placeholder="Password" />
+                  <Form.Label>Confirm Password</Form.Label>
+                  <Form.Control type="password" name="confirmpassword" onChange={valorInput} placeholder="Confirm Password" />
                 </Form.Group>
-                }
-                {/* <form class="pure-form">
-                    <fieldset>
-                        <legend>Confirmação de Senha </legend>
-
-                        <input type="password" placeholder="Senha" id="password" required/>
-                        <input type="password" placeholder="Confirme Senha" id="confirm_password" required/>
-
-                        <button type="submit" class="pure-button pure-button-primary">Confirmar</button>
-                    </fieldset>
-                </form> */}
                 {status.loading ? <Button id="button" variant="primary" disabled type="submit" >Enviando...</Button>
-                : <Button id="button" variant="primary" type="submit" >Enviar</Button>}
+                                : <Button id="button" variant="primary" type="submit" >Enviar</Button>}
               </Form>
           </Container>
         </div>

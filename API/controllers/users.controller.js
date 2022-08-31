@@ -265,11 +265,10 @@ exports.recovery = async (req, res) => {
 
 exports.updatepassword = async (req, res) => {
 
-    const { password } = req.body;
-    var senhaCrypt = await bcrypt.hash(password, 8);
+    const { password, confirmpassword } = req.body;
 
     const user = await User.findOne({
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'name', 'email', 'password'],
         where: {
             email: req.body.email
         }
@@ -282,37 +281,37 @@ exports.updatepassword = async (req, res) => {
         }
     })
     
-    if(user.id === null){
-        return res.status(400).json({
-            erro: true,
-            mensagem:"Erro: Email incorreto!!!"
-        })
-    }
-
     if(user === null){
         return res.status(400).json({
             erro: true,
             mensagem:"Erro: Email incorreto!!!"
         })
     }
-
     if(token === null){
         return res.status(400).json({
             erro: true,
             mensagem:"Erro: token incorreto!!!"
         })
-    } else {      
-        await User.update({ password: senhaCrypt }, {where: {id: user.id}})
-        .then(() => {
-            return res.json({
-                erro: false,
-                mensagem: "Senha editada com sucesso!"
-            }); 
-        }).catch( (err) => {
-            return res.status(400).json({
-                erro: true,
-                mensagem: `Erro: ${err}... A senha não foi alterada!!!`
-            })
-        })
     }
+    console.log(password)
+    console.log(confirmpassword)
+    if(password !== confirmpassword){
+        return res.status(400).json({
+            erro: true,
+            mensagem:"Erro: As senhas são diferentes!!!"
+        })
+    }     
+    var senhaCrypt = await bcrypt.hash(password, 8);
+    senhaCrypt = await User.update({ password: senhaCrypt }, {where: {id: user.id}})
+    .then(() => {
+        return res.json({
+            erro: false,
+            mensagem: "Senha editada com sucesso!"
+        }); 
+    }).catch( (err) => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: `Erro: ${err}... A senha não foi alterada!!!`
+        })
+    })
 }
