@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom'
 
-import { Login } from '../components/Login/Login';
+import { Login } from '../components/EnviarEmail/EnviarEmail';
 import { Dashboard } from '../page/Dashboard/Dashboard';
-import { UsuariosForm } from '../page/CategoryForm/CategoryForm';
+import { UsuariosForm } from '../page/PasswordForm/PasswordForm';
 
 export default function PrivateRoute(){
     return(

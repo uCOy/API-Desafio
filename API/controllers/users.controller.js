@@ -225,22 +225,22 @@ exports.recovery = async (req, res) => {
             let to = email;
             let cc = '';
             var htmlbody = "";
-            htmlbody += '<div style="background-color:#000; margin-bottom:150px;">';
+            htmlbody += '<div style="background-color:#fff; margin-bottom:150px;">';
             htmlbody += '<div style="margin-top:150px;">';
-            htmlbody += '<p style="color:#fff; font-weight:bold;margin-top:50px;">';
+            htmlbody += '<p style="color:#000; font-weight:bold;margin-top:30px;">';
             htmlbody += 'Olá {name},';
             htmlbody += '</p>';
-            htmlbody += '<p style="color:#fff; font-style:italic;margin-top:50px;">';
-            htmlbody += 'Sua conta foi criada com sucesso!';
+            htmlbody += '<p style="color:#000;margin-top:30px;">';
+            htmlbody += 'Seu codigo foi enviado no email: {email}';
             htmlbody += '</p>';
-            htmlbody += '<p style="color:#fff;margin-top:50px;">';
-            htmlbody += 'Seu login é o seu email: {email}';
-            htmlbody += '</p>';
-            htmlbody += '<p style="color:#fff;margin-top:50px;">';
+            htmlbody += '<p style="color:#000;margin-top:30px;">';
             htmlbody += 'Token: {token}';
             htmlbody += '</p>';
-            htmlbody += '<p style="color:#fff;margin-top:50px;">';
-            htmlbody += '<a style="color=#fff;" href="http://127.0.0.1:5173/updatepassword"> LINK </a>';
+            htmlbody += '<p style="color:#000;margin-top:30px;">';
+            htmlbody += 'Acesse o Link abaixo para ser redirecionado para o formulário de alteração de senha';
+            htmlbody += '</p>';
+            htmlbody += '<p style="color:#000;margin-top:30px;">';
+            htmlbody += '<a style="color=#000;" href="http://127.0.0.1:5173/updatepassword"> LINK </a>';
             htmlbody += '</p>';
             htmlbody += '</div>';
             htmlbody += '</div>';
@@ -265,7 +265,10 @@ exports.recovery = async (req, res) => {
 
 exports.updatepassword = async (req, res) => {
 
-    const { password, confirmpassword } = req.body;
+    var dados = req.body;
+    let email = dados.email;
+
+    const { password2, confirmpassword } = req.body;
 
     const user = await User.findOne({
         attributes: ['id', 'name', 'email', 'password'],
@@ -293,18 +296,34 @@ exports.updatepassword = async (req, res) => {
             mensagem:"Erro: token incorreto!!!"
         })
     }
-    console.log(password)
+    console.log(password2)
     console.log(confirmpassword)
-    if(password !== confirmpassword){
+    if(password2 !== confirmpassword){
         return res.status(400).json({
             erro: true,
             mensagem:"Erro: As senhas são diferentes!!!"
         })
     }     
-    var senhaCrypt = await bcrypt.hash(password, 8);
+    var senhaCrypt = await bcrypt.hash(password2, 8);
     senhaCrypt = await User.update({ password: senhaCrypt }, {where: {id: user.id}})
     .then(() => {
-        return res.json({
+        let to = email;
+        let cc = '';
+        var htmlbody = "";
+        htmlbody += '<div style="background-color:#fff; margin-bottom:150px;">';
+        htmlbody += '<div style="margin-top:150px;">';
+        htmlbody += '<p style="color:#000; font-weight:bold;margin-top:30px;">';
+        htmlbody += 'Olá {name},';
+        htmlbody += '</p>';
+        htmlbody += '<p style="color:#000; margin-top:30px;">';
+        htmlbody += 'Sua Senha foi alterada com sucesso!!!';
+        htmlbody += '</p>';
+        htmlbody += '</div>';
+        htmlbody += '</div>';
+        htmlbody = htmlbody.replace('{name}', user.name);
+        sendMail(to, cc, 'Confirme sua alteração de senha', htmlbody);
+
+        return res.status(200).json({
             erro: false,
             mensagem: "Senha editada com sucesso!"
         }); 
