@@ -37,7 +37,7 @@ export const UsuariosForm = (props) => {
             .then( (response) => {
                     console.log(response);
                     setStatus({loading: false});
-                    return history.push('/')
+                    // return history.push('/')
                 }).catch( (err) => {
                     if(err.response){
                         setStatus({

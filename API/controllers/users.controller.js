@@ -280,6 +280,7 @@ exports.updatepassword = async (req, res) => {
     const token = await User.findOne({
         attributes: ['verificationCode'],
         where: {
+            id: user.id,
             verificationCode: req.body.verificationCode
         }
     })
